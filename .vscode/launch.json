@@ -7,13 +7,30 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Launch Dry Run",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/sync.js",
             "args": [
-                "./configs/example.json"
+                "./configs/example.json",
+                "2024-05-01",
+                "2024-05-31",
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Copy",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/sync.js",
+            "args": [
+                "./configs/example.json",
+                "2024-05-01",
+                "2024-05-31",
+                "copy"
             ]
         }
     ]
