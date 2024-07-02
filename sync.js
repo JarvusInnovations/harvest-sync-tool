@@ -83,7 +83,7 @@ async function syncAllUsers(job) {
             }
         });
 
-        const userHours = await syncAllEntries(job, srcHarvest, dstHarvest);
+        const userHours = await syncAllEntries(user, job, srcHarvest, dstHarvest);
         console.log(`Total hours for ${user}: ${userHours}`);
         totalHours += userHours;
     }
@@ -91,11 +91,20 @@ async function syncAllUsers(job) {
     console.log(`Total hours for all users: ${totalHours}`);
 }
 
-async function syncAllEntries(job, srcHarvest, dstHarvest) {
+async function syncAllEntries(user, job, srcHarvest, dstHarvest) {
+    // build client/project matching regexps
     const srcClientRegex = job.src.client ? new RegExp(job.src.client) : null;
     const srcProjectRegex = job.src.project ? new RegExp(job.src.project) : null;
+    const srcProjectCodeRegex = job.src.project_code ? new RegExp(job.src.project_code) : null;
     const dstClientRegex = job.dst.client ? new RegExp(job.dst.client) : null;
     const dstProjectRegex = job.dst.project ? new RegExp(job.dst.project) : null;
+    const dstProjectCodeRegex = job.dst.project_code ? new RegExp(job.dst.project_code) : null;
+
+    // build task mapping regexps
+    const taskRegexMap = new Map();
+    for (const [srcTask, dstTask] of Object.entries(job.tasks)) {
+        taskRegexMap.set(new RegExp(srcTask), new RegExp(dstTask));
+    }
 
     let totalHours = 0;
 
@@ -111,6 +120,10 @@ async function syncAllEntries(job, srcHarvest, dstHarvest) {
             }
 
             if (srcProjectRegex && !srcProjectRegex.test(assignment.project.name)) {
+                return false;
+            }
+
+            if (srcProjectCodeRegex && !srcProjectCodeRegex.test(assignment.project.code)) {
                 return false;
             }
 
@@ -133,6 +146,10 @@ async function syncAllEntries(job, srcHarvest, dstHarvest) {
                 return false;
             }
 
+            if (dstProjectCodeRegex && !dstProjectCodeRegex.test(assignment.project.code)) {
+                return false;
+            }
+
             return true;
         });
 
@@ -145,6 +162,8 @@ async function syncAllEntries(job, srcHarvest, dstHarvest) {
             console.error(`More than one matching destination project found for user ${srcMe.email}`);
             return 0;
         }
+
+        const dstTargetAssignment = dstTargetAssignments[0];
 
         for (const srcAssignment of srcTargetAssignments) {
             // get time entries for month
@@ -159,9 +178,27 @@ async function syncAllEntries(job, srcHarvest, dstHarvest) {
 
             // create time entry
             for (const srcEntry of srcEntries) {
+                // find matching task
+                let dstTaskId = null;
+                for (const [srcTaskRegex, dstTaskRegex] of taskRegexMap.entries()) {
+                    if (srcTaskRegex.test(srcEntry.task.name)) {
+                        const dstTaskAssignment = dstTargetAssignment.task_assignments.find(assignment => dstTaskRegex.test(assignment.task.name));
+                        if (dstTargetAssignment) {
+                            dstTaskId = dstTaskAssignment.task.id;
+                            break;
+                        }
+                    }
+                }
+
+                if (!dstTaskId) {
+                    console.error(`No matching destination task found for source task ${srcEntry.task.name}`);
+                    return totalHours;
+                }
+
+                // build destination entry
                 const dstEntry = {
-                    project_id: dstTargetAssignments[0].project.id,
-                    task_id: dstTargetAssignments[0].task_assignments[0].task.id,
+                    project_id: dstTargetAssignment.project.id,
+                    task_id: dstTaskId,
                     spent_date: srcEntry.spent_date,
                     hours: srcEntry.hours,
                     notes: srcEntry.notes
@@ -176,7 +213,7 @@ async function syncAllEntries(job, srcHarvest, dstHarvest) {
             }
         }
     } catch (err) {
-        debugger;
+        console.error(`Failed to sync entries for user ${user}: ${err.message}`);
     }
 
     return totalHours;
