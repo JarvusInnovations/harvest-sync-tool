@@ -1,0 +1,40 @@
+{
+    "accounts": {
+        "src": 123456,
+        "dst": 123456
+    },
+    "users": {
+        "grace": {
+            "src": "1234567.pt.k3hr3WDzFrQ9jDJe0QY4xEtwN9XEpLh2rvVBwpugUydTNgpVtzwYnxAgpT3Kcm30biBPeU2KxUk8TfNY1RUJu1",
+            "dst": "1234567.pt.k3hr3WDzFrQ9jDJe0QY4xEtwN9XEpLh2rvVBwpugUydTNgpVtzwYnxAgpT3Kcm30biBPeU2KxUk8TfNY1RUJu1"
+        },
+        "benjamine": {
+            "src": "1234567.pt.Q5wCKBcb6MpBAzDqPEJwKcbp8MPT1mexpxm2M46bLwv16LqXD1tpDmKF8pRSe3dVuFtiLh56MVkfVwAC2pdr3h",
+            "dst": "1234567.pt.Q5wCKBcb6MpBAzDqPEJwKcbp8MPT1mexpxm2M46bLwv16LqXD1tpDmKF8pRSe3dVuFtiLh56MVkfVwAC2pdr3h"
+        },
+    },
+    "jobs": [
+        {
+            "name": "Copy [PROJECT] hours",
+            "src": {
+                "client": "^ACME$",
+                "project_code": "^Anvils$"
+            },
+            "dst": {
+                "client": "^ACME Inc$",
+                "project_code": "^Hardware$"
+            },
+            "tasks": {
+                "^1:": "^1:",
+                "^2:": "^2:",
+                "^3:": "^3:",
+                "^4:": "^4:",
+                "^5:": "^5:",
+                "^6:": "^6:",
+                "^7:": "^7:",
+                "^8:": "^8:",
+                "^9:": "^9:"
+            }
+        }
+    ]
+}
